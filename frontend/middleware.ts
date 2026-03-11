@@ -5,11 +5,14 @@ import type { NextRequest } from "next/server";
 const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
+  '/login(.*)',
+  '/signup(.*)',
+  '/pricing(.*)',
+  '/offline(.*)',
   '/',
 ]);
 
-// Check if Clerk is properly configured (test keys for localhost)
-const hasValidClerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.startsWith('pk_test_');
+const hasValidClerkKey = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 export default hasValidClerkKey
   ? clerkMiddleware(async (auth, req) => {
