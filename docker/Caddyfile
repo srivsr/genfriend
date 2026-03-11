@@ -1,0 +1,9 @@
+# Add these entries to your existing Caddyfile on the server
+
+genfriend.app {
+    reverse_proxy localhost:3004
+}
+
+api.genfriend.app {
+    reverse_proxy localhost:8002
+}

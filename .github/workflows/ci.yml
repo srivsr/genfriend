@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: genfriend_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt pytest-cov
+
+      - name: Run tests
+        working-directory: backend
+        env:
+          ENVIRONMENT: test
+          DATABASE_URL: sqlite+aiosqlite:///./test.db
+          AUTO_CREATE_TABLES: "true"
+        run: |
+          python -m pytest tests/ -v --tb=short --cov=app --cov-report=term-missing
+
+  lint-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install ruff
+      - run: ruff check backend/app/
+      - run: ruff format --check backend/app/
+
+  build-docker:
+    runs-on: ubuntu-latest
+    needs: [test-backend, lint-backend]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build backend image
+        run: docker build -f docker/Dockerfile.backend -t genfriend-backend:${{ github.sha }} .
+      - name: Build frontend image
+        run: docker build -f docker/Dockerfile.frontend -t genfriend-frontend:${{ github.sha }} .
