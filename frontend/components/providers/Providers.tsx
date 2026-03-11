@@ -6,10 +6,7 @@ import { setClerkToken } from '@/lib/api-client';
 import PWAProvider from '@/components/pwa/PWAProvider';
 import InstallPrompt from '@/components/pwa/InstallPrompt';
 
-// Check if Clerk has valid test keys for localhost
-const hasValidClerkKey = typeof window !== 'undefined'
-  ? process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.startsWith('pk_test_')
-  : process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.startsWith('pk_test_');
+const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 function ClerkTokenSync({ children }: { children: ReactNode }) {
   const { getToken, isSignedIn } = useClerkAuth();
@@ -36,23 +33,21 @@ function ClerkTokenSync({ children }: { children: ReactNode }) {
 }
 
 export default function Providers({ children }: { children: ReactNode }) {
-  // Skip Clerk if no valid test keys (using production keys on localhost won't work)
-  if (!hasValidClerkKey) {
-    return (
-      <PWAProvider>
-        {children}
-        <InstallPrompt />
-      </PWAProvider>
-    );
+  const inner = (
+    <PWAProvider>
+      {children}
+      <InstallPrompt />
+    </PWAProvider>
+  );
+
+  if (!clerkKey) {
+    return inner;
   }
 
   return (
-    <ClerkProvider>
+    <ClerkProvider publishableKey={clerkKey}>
       <ClerkTokenSync>
-        <PWAProvider>
-          {children}
-          <InstallPrompt />
-        </PWAProvider>
+        {inner}
       </ClerkTokenSync>
     </ClerkProvider>
   );

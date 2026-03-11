@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import Providers from '@/components/providers/Providers'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Gen-Friend - AI Productivity Companion',
   description: 'Your AI productivity companion - daily planning, career coaching, and skill development. The opposite of Instagram.',
