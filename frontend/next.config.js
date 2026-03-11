@@ -3,6 +3,14 @@ const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
   poweredByHeader: false,
+  async rewrites() {
+    return [
+      {
+        source: '/.clerk/:path*',
+        destination: 'https://clerk.srivsr.com/:path*',
+      },
+    ]
+  },
   async headers() {
     return [
       {

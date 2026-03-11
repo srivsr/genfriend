@@ -45,7 +45,7 @@ export default function Providers({ children }: { children: ReactNode }) {
   }
 
   return (
-    <ClerkProvider publishableKey={clerkKey}>
+    <ClerkProvider publishableKey={clerkKey} proxyUrl={process.env.NEXT_PUBLIC_CLERK_PROXY_URL}>
       <ClerkTokenSync>
         {inner}
       </ClerkTokenSync>
